@@ -308,4 +308,9 @@ runs:
           if [ "${{ runner.os }}" != "Windows" ]; then
             MAYBE_SUDO="sudo -E"
           fi
-          timeout --verbose --kill-after=1s ${TIMEOUT} ${MAYBE_SUDO} tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes ${ADDITIONAL_ARGS}
+          for i in {1..5}; do
+            echo "Attempt $i to bring up Tailscale..."
+            timeout --verbose --kill-after=1s ${TIMEOUT} ${MAYBE_SUDO} tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY} --hostname=${HOSTNAME} --accept-routes ${ADDITIONAL_ARGS} && break
+            echo "Tailscale up failed. Retrying in $((i * 5)) seconds..."
+            sleep $((i * 5))
+          done
